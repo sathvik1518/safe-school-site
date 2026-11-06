@@ -1,0 +1,7 @@
+# Save as  wp-content/uploads/.htaccess   (Apache 2.4)
+# People can upload pictures and documents here. If a PHP file ever lands in this folder (through a weak plugin, say),
+# this rule stops the server from running it. Not run by the test site: test it on your host by putting a file
+# named test.php in uploads and opening it in a browser. It must say "403 Forbidden".
+<FilesMatch "\.(php|phtml|php[0-9]|phar)$">
+    Require all denied
+</FilesMatch>

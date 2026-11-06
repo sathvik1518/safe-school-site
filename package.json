@@ -1,0 +1,22 @@
+{
+  "name": "safe-school-site",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "wp:setup": "node harness/wp.mjs setup",
+    "wp:start": "node harness/wp.mjs start",
+    "backup": "node scripts/backup.mjs",
+    "restore": "node scripts/restore.mjs",
+    "keys": "node hardening/make-keys.mjs",
+    "test:wp": "node --test --test-concurrency=1 tests/hardening.test.mjs tests/site.test.mjs tests/restore.test.mjs",
+    "test:browser": "node --test --test-concurrency=1 tests/browser.test.mjs",
+    "check": "npm run test:wp && npm run test:browser"
+  },
+  "devDependencies": {
+    "linkedom": "^0.18.0",
+    "playwright": "^1.63.0",
+    "pixelmatch": "^7.1.0",
+    "pngjs": "^7.0.0"
+  }
+}

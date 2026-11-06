@@ -1,0 +1,26 @@
+# Put these lines at the TOP of the .htaccess file in the site's main folder (Apache 2.4).
+# They are NOT run by the test site (PHP's built-in server ignores .htaccess). Test them on your host:
+# after saving, open /xmlrpc.php, /wp-config.php, /readme.html in a browser. Each must say "403 Forbidden", and the home page must still open.
+
+# Nobody may fetch the files that give attackers a way in or tell them which WordPress version you have.
+<FilesMatch "^(xmlrpc\.php|wp-config\.php|readme\.html|license\.txt|wp-config-sample\.php)$">
+    Require all denied
+</FilesMatch>
+
+# Do not list the contents of a folder that has no index file.
+Options -Indexes
+
+# Three small safety headers. They sit inside IfModule: if the headers module is off on your host, the site still works
+# (without this wrapper the same lines give a 500 error for the whole site).
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Do NOT use <Directory> in this file. Apache answers 500: <Directory> belongs in the server's own config, not in .htaccess.
+# Do NOT use "Order deny,allow / Deny from all": that is the Apache 2.2 way and only works if an old-compatibility module is loaded.
+
+# ...then WordPress's own block (WordPress writes this itself when you save Settings > Permalinks):
+# BEGIN WordPress
+# END WordPress

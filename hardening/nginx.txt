@@ -1,0 +1,5 @@
+# If the host runs nginx instead of Apache, .htaccess does nothing. The same three jobs, as nginx rules.
+# NOT tested here (no nginx in the sandbox). Put them inside the server { } block, then reload nginx and test /xmlrpc.php.
+location = /xmlrpc.php { deny all; }
+location ~* ^/(wp-config\.php|readme\.html|license\.txt|wp-config-sample\.php)$ { deny all; }
+location ~* ^/wp-content/uploads/.*\.(php|phtml|phar)$ { deny all; }

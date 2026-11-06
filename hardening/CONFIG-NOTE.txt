@@ -1,0 +1,48 @@
+HARDENING NOTE: what is closed, where the switch is, how it was tested
+=======================================================================
+
+The school's hardening is in three small places. Nothing here needs a settings page.
+
+1. wp-config.php            hardening/wp-config-lines.php   (paste above "That's all, stop editing!")
+2. the plugin               plugin/safe-school-hardening/    (activate it; it has no settings)
+3. Apache / host files      hardening/htaccess.txt, hardening/uploads-htaccess.txt   (NOT tested here)
+
+WHAT EACH LINE DOES
+-------------------
+DISALLOW_FILE_EDIT   removes BOTH code editors (Appearance > Theme File Editor and Plugins > Plugin File Editor).
+                     Do not use DISALLOW_FILE_MODS instead: it also hides the Plugins menu and stops updates.
+                     The plugin adds a second lock for the same editors, in case wp-config.php is ever re-created without the line.
+WP_DEBUG_DISPLAY     false: error text never prints on a page (it can show file paths).
+FORCE_SSL_ADMIN      OFF on purpose. Turn it on only after https:// works on your host, or you lock everybody out of the
+                     dashboard. Check first: open https://your-site/wp-login.php.
+SECRET KEYS          8 of them, random, only in the real wp-config.php. Run  node hardening/make-keys.mjs  to print 8 fresh lines.
+                     Changing them logs everybody out. The test site uses fake keys ("test-only-key-1"): never copy those.
+
+THE THREE USERNAME DOORS (the plugin closes all three)
+------------------------------------------------------
+1. /?author=1          WordPress sends it to /author/<login>/ . Now a Visitor gets 404, with no redirect.
+2. /wp-json/wp/v2/users   the REST list of users. Now the route does not exist for a Visitor (404).
+3. /wp-sitemap-users-1.xml   the users sitemap. Now removed (404) and not listed in /wp-sitemap.xml.
+"Visitor" means: not signed in, OR signed in without the "list_users" right (so Editors and Subscribers are treated as Visitors).
+Administrators keep all three, because they can see usernames in the dashboard anyway.
+
+EXTRA DOORS FOUND WHILE TESTING (also closed)
+---------------------------------------------
+- XML-RPC (xmlrpc.php): answers 403 to everything, before WordPress runs. No RSD link, no X-Pingback header.
+- oEmbed (/wp-json/oembed/1.0/embed): author_name and author_url removed for Visitors.
+- Login page: "no such user", "wrong password" and "unknown email" all show one sentence.
+- "Lost your password?": the same redirect for a real and a made-up name.
+- Display names: the website prints "School Office", never the login "admin". Set a different display name for every user.
+
+HOW IT WAS TESTED (npm run check)
+---------------------------------
+Every door above is tested as a Visitor, as a Subscriber, as an Editor and as an Administrator. The tests run on the live test
+site AND on a restored copy. A separate script (break45.py) breaks the code on purpose, one rule at a time, and checks that a test fails.
+
+NOT TESTED HERE
+---------------
+- .htaccess and nginx rules: the test server (PHP's built-in server) ignores them. Test on the real host: after saving,
+  /xmlrpc.php, /wp-config.php and /readme.html must each say 403, and the home page must still open.
+- FORCE_SSL_ADMIN: needs a working https host.
+- Real mail delivery (contact form and "Lost your password?"): the sandbox has no mail server. Messages are saved first, so none is lost.
+- MySQL. The tests ran on SQLite.
